@@ -39,7 +39,7 @@ namespace WindowsFormsApp1
 
         public static CounterDefinition GetFromPointer(UIntPtr CurrentCounterPntr)
         {
-            int p = Externals.GetCounterInfo(
+            Externals.GetCounterInfo(
                 CurrentCounterPntr,
                 out int ByteLength,
                 out int CounterHelpTitleIndex,
@@ -90,6 +90,15 @@ namespace WindowsFormsApp1
                 rd.Frequency,
                 Value);
             this.Value = Value.ToString();
+        }
+
+        public string GetDescription()
+        {
+            return "Size: " + CounterSize + " bytes" + "\r\n" +
+                "Counter type: " + CounterType + " = {0}\r\n" +
+                "Counter type description: {1}\r\n" +
+                "Default scale: " + Math.Pow(10, DefaultScale) + "\r\n" +
+                "Detail level: " + DetailLevel + " = " + Utils.GetDetailLevel(DetailLevel) + "\r\n";
         }
     }
 }

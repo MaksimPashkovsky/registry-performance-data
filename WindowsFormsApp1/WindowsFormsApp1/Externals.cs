@@ -7,10 +7,10 @@ namespace WindowsFormsApp1
     public class Externals
     {
         [DllImport("dll\\perf_dll.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetDataBlock(out UIntPtr DataBlockPntr);
+        public static extern void GetDataBlockPointer(out UIntPtr DataBlockPntr);
 
         [DllImport("dll\\perf_dll.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetDataBlockInfo(
+        public static extern void GetDataBlockInfo(
             UIntPtr DataBlockPntr,
             out long DefaultObject,
             out int NumObjectTypes,
@@ -25,13 +25,13 @@ namespace WindowsFormsApp1
             out int Version);
 
         [DllImport("dll\\perf_dll.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetFirstObjectType(UIntPtr DataBlockPntr, out UIntPtr ObjTypePntr);
+        public static extern void GetFirstObjectTypePointer(UIntPtr DataBlockPntr, out UIntPtr ObjTypePntr);
 
         [DllImport("dll\\perf_dll.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetNextObjectType(UIntPtr p, out UIntPtr pp);
+        public static extern void GetNextObjectTypePointer(UIntPtr p, out UIntPtr pp);
 
         [DllImport("dll\\perf_dll.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetPerfObjectTypeInfo(
+        public static extern void GetPerfObjectTypeInfo(
             UIntPtr p,
             out int ObjectNameTitleIndex,
             out int TotalByteLength,
@@ -45,22 +45,22 @@ namespace WindowsFormsApp1
             out long PerfFreq);
 
         [DllImport("dll\\perf_dll.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetCounterDefinition(UIntPtr ObjTypePntr, out UIntPtr CounterDefPntr);
+        public static extern void GetCounterDefinitionPointer(UIntPtr ObjTypePntr, out UIntPtr CounterDefPntr);
 
         [DllImport("dll\\perf_dll.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetCounterBlock_Inst(UIntPtr InstDefPntr, out UIntPtr CounterBlockPntr);
+        public static extern void GetCounterBlock_InstPointer(UIntPtr InstDefPntr, out UIntPtr CounterBlockPntr);
 
         [DllImport("dll\\perf_dll.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetCounterBlock_Obj(UIntPtr ObjTypePntr, out UIntPtr CounterBlockPntr);
+        public static extern void GetCounterBlock_ObjPointer(UIntPtr ObjTypePntr, out UIntPtr CounterBlockPntr);
 
         [DllImport("dll\\perf_dll.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetFirstInstance(UIntPtr p, out UIntPtr pp);
+        public static extern void GetFirstInstancePointer(UIntPtr p, out UIntPtr pp);
 
         [DllImport("dll\\perf_dll.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetNextInstance(UIntPtr p, out UIntPtr pp);
+        public static extern void GetNextInstancePointer(UIntPtr p, out UIntPtr pp);
 
         [DllImport("dll\\perf_dll.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-        public static extern int GetInstanceInfo(
+        public static extern void GetInstanceInfo(
             UIntPtr p,
             int CodePage,
             out int ByteLength,
@@ -69,7 +69,7 @@ namespace WindowsFormsApp1
             StringBuilder Name);
 
         [DllImport("dll\\perf_dll.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-        public static extern int GetCounterInfo(
+        public static extern void GetCounterInfo(
             UIntPtr PerfCounterDefPntr,
             out int ByteLength,
             out int CounterHelpTitleIndex,
@@ -80,10 +80,10 @@ namespace WindowsFormsApp1
             out int DetailLevel);
 
         [DllImport("dll\\perf_dll.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-        public static extern int GetNextCounter(UIntPtr PerfCounterDefPntr1, out UIntPtr PerfCounterDefPntr2);
+        public static extern void GetNextCounterPointer(UIntPtr PerfCounterDefPntr1, out UIntPtr PerfCounterDefPntr2);
 
         [DllImport("dll\\perf_dll.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-        public static extern bool GetCounterValue(
+        public static extern void GetCounterValue(
             UIntPtr DataBlockPntr,
             UIntPtr pObject,
             UIntPtr pCounter,
@@ -94,7 +94,7 @@ namespace WindowsFormsApp1
             out long Frequency);
 
         [DllImport("dll\\perf_dll.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-        public static extern bool GetCalculatedValue(
+        public static extern void GetCalculatedValue(
             int CounterType0,
             ulong Data0,
             long Time0,
@@ -108,6 +108,6 @@ namespace WindowsFormsApp1
             StringBuilder FinalValue);
 
         [DllImport("dll\\perf_dll.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetCounterType(int numbertype, StringBuilder name, StringBuilder description);
+        public static extern void GetCounterType(int numbertype, StringBuilder name, StringBuilder description);
     }
 }

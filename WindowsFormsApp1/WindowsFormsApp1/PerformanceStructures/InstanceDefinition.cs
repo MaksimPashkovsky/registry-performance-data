@@ -31,7 +31,7 @@ namespace WindowsFormsApp1
         {
             StringBuilder Name = new StringBuilder(300);
 
-            int o = Externals.GetInstanceInfo(
+            Externals.GetInstanceInfo(
                 PerfInstanceDefinitionPntr,
                 codePage,
                 out int ByteLength,

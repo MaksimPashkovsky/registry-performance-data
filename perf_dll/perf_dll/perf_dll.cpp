@@ -1,15 +1,12 @@
 #include "pch.h"
 #include "perf_dll.h"
 #include <string>
-
 #include "stdafx.h"
 #include <tchar.h>
-
 #include <windows.h>	// Standard windows header
 #include <winperf.h>	// Performance monitor definations
 #include <stdio.h>		// printf() and other I/O stuff
 #include <malloc.h>		// memory allocation definations.
-
 #include <fstream>
 #include <iomanip>
 #include <sstream>
@@ -26,7 +23,7 @@
 
 using namespace std;
 
-extern "C" __declspec(dllexport) int GetDataBlock(PPERF_DATA_BLOCK* p) {
+extern "C" __declspec(dllexport) void GetDataBlockPointer(PPERF_DATA_BLOCK* p) {
 	PPERF_DATA_BLOCK PerfDataBlock = NULL;
 	DWORD BufferSize = BUFFERSIZE;
 	PerfDataBlock = (PPERF_DATA_BLOCK)malloc(BufferSize);
@@ -42,25 +39,23 @@ extern "C" __declspec(dllexport) int GetDataBlock(PPERF_DATA_BLOCK* p) {
 		BufferSize += INCREMENT;
 		PerfDataBlock = (PPERF_DATA_BLOCK)realloc(PerfDataBlock, BufferSize);
 	}
-
 	*p = PerfDataBlock;
-	return 0;
 }
 
-extern "C" __declspec(dllexport) int GetDataBlockInfo(PPERF_DATA_BLOCK p,
-														LONG* DefaultObject,
-														DWORD* NumObjectTypes,
-														LONGLONG* PerfFreq,
-														LONGLONG* PerfTime,
-														LONGLONG* PerfTime100nSec,
-														DWORD* Revision,
-														char* Signature,
-														char* SystemName,
-														char* SystemTime,
-														DWORD* TotalByteLength,
-														DWORD* Version) 
+extern "C" __declspec(dllexport) void GetDataBlockInfo(
+	PPERF_DATA_BLOCK p,
+	LONG* DefaultObject,
+	DWORD* NumObjectTypes,
+	LONGLONG* PerfFreq,
+	LONGLONG* PerfTime,
+	LONGLONG* PerfTime100nSec,
+	DWORD* Revision,
+	char* Signature,
+	char* SystemName,
+	char* SystemTime,
+	DWORD* TotalByteLength,
+	DWORD* Version) 
 {
-	stringstream ss;
 	*DefaultObject = p->DefaultObject;
 	*NumObjectTypes = p->NumObjectTypes;
 	*PerfFreq = p->PerfFreq.QuadPart;
@@ -70,19 +65,17 @@ extern "C" __declspec(dllexport) int GetDataBlockInfo(PPERF_DATA_BLOCK p,
 	*TotalByteLength = p->TotalByteLength;
 	*Version = p->Version;
 
-	char* name = (char*)((PBYTE)p + p->SystemNameOffset);
-	for (int i = 0; i < p->SystemNameLength; i = i +2)
-	{
-		ss << name + i;
-	}
+	stringstream ss;
 
-	string str2 = ss.str();
-	strcpy(SystemName, str2.c_str());
+	char* name = (char*)((PBYTE)p + p->SystemNameOffset);
+	for (int i = 0; i < p->SystemNameLength; i = i +2) 
+		ss << name + i;
+
+	strcpy(SystemName, ss.str().c_str());
 	ss.str("");
 
 	ss << char(p->Signature[0]) << char(p->Signature[1]) << char(p->Signature[2]) << char(p->Signature[3]);
-	string str = ss.str();
-	strcpy(Signature, str.c_str());
+	strcpy(Signature, ss.str().c_str());
 	ss.str("");
 
 	SYSTEMTIME st = p->SystemTime;
@@ -111,32 +104,29 @@ extern "C" __declspec(dllexport) int GetDataBlockInfo(PPERF_DATA_BLOCK p,
 	}
 	ss << " " << st.wDay << "." << st.wMonth << "." << st.wYear << " "  
 		<< st.wHour << ":" << st.wMinute << ":"  << st.wSecond << ":" << st.wMilliseconds;
-	string str3 = ss.str();
-	strcpy(SystemTime, str3.c_str());
-	return 0;
+	strcpy(SystemTime, ss.str().c_str());
 }
 
-extern "C" __declspec(dllexport) int GetFirstObjectType(PPERF_DATA_BLOCK p, PPERF_OBJECT_TYPE* pp) {
+extern "C" __declspec(dllexport) void GetFirstObjectTypePointer(PPERF_DATA_BLOCK p, PPERF_OBJECT_TYPE* pp) {
 	*pp = (PPERF_OBJECT_TYPE)((PBYTE)p + p->HeaderLength);
-	return 0;
 }
 
-extern "C" __declspec(dllexport) int GetNextObjectType(PPERF_OBJECT_TYPE p, PPERF_OBJECT_TYPE* pp) {
+extern "C" __declspec(dllexport) void GetNextObjectTypePointer(PPERF_OBJECT_TYPE p, PPERF_OBJECT_TYPE* pp) {
 	*pp = (PPERF_OBJECT_TYPE)((PBYTE)p + p->TotalByteLength);
-	return 0;
 }
 
-extern "C" __declspec(dllexport) int GetPerfObjectTypeInfo(PPERF_OBJECT_TYPE p, 
-															DWORD* ObjectNameTitleIndex,
-															DWORD* TotalByteLength,
-															DWORD* ObjectHelpTitleIndex,
-															DWORD* DetailLevel,
-															DWORD* NumCounters,
-															LONG* DefaultCounter,
-															LONG* NumInstances,
-															DWORD* CodePage,
-															LONGLONG* PerfTime,
-															LONGLONG* PerfFreq) 
+extern "C" __declspec(dllexport) void GetPerfObjectTypeInfo(
+	PPERF_OBJECT_TYPE p, 
+	DWORD* ObjectNameTitleIndex,
+	DWORD* TotalByteLength,
+	DWORD* ObjectHelpTitleIndex,
+	DWORD* DetailLevel,
+	DWORD* NumCounters,
+	LONG* DefaultCounter,
+	LONG* NumInstances,
+	DWORD* CodePage,
+	LONGLONG* PerfTime,
+	LONGLONG* PerfFreq) 
 {
 	*ObjectNameTitleIndex =		p->ObjectNameTitleIndex;
 	*TotalByteLength =			p->TotalByteLength;
@@ -144,36 +134,27 @@ extern "C" __declspec(dllexport) int GetPerfObjectTypeInfo(PPERF_OBJECT_TYPE p,
 	*DetailLevel =				p->DetailLevel;
 	*NumCounters =				p->NumCounters;
 	*DefaultCounter =			p->DefaultCounter;
-	if (p->NumInstances > 0)
-	{
-		*NumInstances = p->NumInstances;
-	}
-	else *NumInstances = 0;
+	p->NumInstances > 0 ? *NumInstances = p->NumInstances : *NumInstances = 0;
 	*CodePage =	p->CodePage;
 	*PerfTime =	p->PerfTime.QuadPart;
 	*PerfFreq =	p->PerfFreq.QuadPart;
-	return 0;
 }
 
-extern "C" __declspec(dllexport) int GetCounterDefinition(PPERF_OBJECT_TYPE p, PPERF_COUNTER_DEFINITION* pp) {
+extern "C" __declspec(dllexport) void GetCounterDefinitionPointer(PPERF_OBJECT_TYPE p, PPERF_COUNTER_DEFINITION* pp) {
 	*pp = (PPERF_COUNTER_DEFINITION)((PBYTE)p + p->HeaderLength);
-	return 0;
 }
 
-extern "C" __declspec(dllexport) int GetCounterBlock_Inst(PPERF_INSTANCE_DEFINITION p, PPERF_COUNTER_BLOCK* pp) {
+extern "C" __declspec(dllexport) void GetCounterBlock_InstPointer(PPERF_INSTANCE_DEFINITION p, PPERF_COUNTER_BLOCK* pp) {
 	*pp = (PPERF_COUNTER_BLOCK)((PBYTE)p + p->ByteLength);
-	return 0;
 }
 
-extern "C" __declspec(dllexport) int GetCounterBlock_Obj(PPERF_OBJECT_TYPE p, PPERF_COUNTER_BLOCK * pp) {
+extern "C" __declspec(dllexport) void GetCounterBlock_ObjPointer(PPERF_OBJECT_TYPE p, PPERF_COUNTER_BLOCK * pp) {
 	*pp = (PPERF_COUNTER_BLOCK)((PBYTE)p +	p->DefinitionLength);
-	return 0;
 }
 
-extern "C" __declspec(dllexport) int GetFirstInstance(PPERF_OBJECT_TYPE p, PPERF_INSTANCE_DEFINITION* pp) {
+extern "C" __declspec(dllexport) void GetFirstInstancePointer(PPERF_OBJECT_TYPE p, PPERF_INSTANCE_DEFINITION* pp) {
 	PPERF_INSTANCE_DEFINITION PerfInstanceDefinition = (PPERF_INSTANCE_DEFINITION)((PBYTE)p + p->DefinitionLength);
 	*pp = PerfInstanceDefinition;
-	return 0;
 }
 
 BOOL ConvertNameToUnicode(UINT CodePage, LPCSTR pNameToConvert, DWORD dwNameToConvertLen, LPWSTR pConvertedName)
@@ -204,13 +185,13 @@ BOOL ConvertNameToUnicode(UINT CodePage, LPCSTR pNameToConvert, DWORD dwNameToCo
 	return fSuccess;
 }
 
-
-extern "C" __declspec(dllexport) int GetInstanceInfo( PPERF_INSTANCE_DEFINITION p,
-															DWORD CodePage,
-															DWORD* ByteLength,
-															DWORD* ParentObjectTitleIndex, 
-															DWORD* ParentObjectInstance, 
-															WCHAR* Name) 
+extern "C" __declspec(dllexport) void GetInstanceInfo(
+	PPERF_INSTANCE_DEFINITION p,
+	DWORD CodePage,
+	DWORD* ByteLength,
+	DWORD* ParentObjectTitleIndex, 
+	DWORD* ParentObjectInstance, 
+	WCHAR* Name)
 {
 	DWORD dwLength = 0;
 	WCHAR wszInstanceName[MAX_INSTANCE_NAME_LEN + 1];
@@ -241,26 +222,25 @@ extern "C" __declspec(dllexport) int GetInstanceInfo( PPERF_INSTANCE_DEFINITION 
 	}
 	
 	StringCchPrintf(Name, MAX_INSTANCE_NAME_LEN + 1, L"%s", wszInstanceName);
-	return 0;
-	cleanup:
-	return 1;
+cleanup:
+	return;
 }
 
 
 
-extern "C" __declspec(dllexport) int GetNextInstance(PPERF_COUNTER_BLOCK p,PPERF_INSTANCE_DEFINITION* pp) {
+extern "C" __declspec(dllexport) void GetNextInstancePointer(PPERF_COUNTER_BLOCK p,PPERF_INSTANCE_DEFINITION* pp) {
 	*pp = (PPERF_INSTANCE_DEFINITION)((PBYTE)p + p->ByteLength);
-	return 0;
 }
 
-extern "C" __declspec(dllexport) int GetCounterInfo(PPERF_COUNTER_DEFINITION p,
-													DWORD* ByteLength,
-													DWORD* CounterHelpTitleIndex,
-													DWORD* CounterNameTitleIndex,
-													DWORD* CounterSize,
-													DWORD* CounterType,
-													LONG* DefaultScale,
-													DWORD* DetailLevel)
+extern "C" __declspec(dllexport) void GetCounterInfo(
+	PPERF_COUNTER_DEFINITION p,
+	DWORD* ByteLength,
+	DWORD* CounterHelpTitleIndex,
+	DWORD* CounterNameTitleIndex,
+	DWORD* CounterSize,
+	DWORD* CounterType,
+	LONG* DefaultScale,
+	DWORD* DetailLevel)
 {
 	*ByteLength = p->ByteLength;
 	*CounterHelpTitleIndex = p->CounterHelpTitleIndex;
@@ -269,18 +249,19 @@ extern "C" __declspec(dllexport) int GetCounterInfo(PPERF_COUNTER_DEFINITION p,
 	*CounterType = p->CounterType;
 	*DefaultScale = p->DefaultScale;
 	*DetailLevel = p->DetailLevel;
-	return 0;
 }
 
 
-extern "C" __declspec(dllexport) BOOL GetCounterValue(PPERF_DATA_BLOCK g_pPerfDataHead,
-													PPERF_OBJECT_TYPE pObject,
-													PPERF_COUNTER_DEFINITION pCounter, 
-													PPERF_COUNTER_BLOCK pCounterDataBlock, 
-													ULONGLONG* Data,
-													LONGLONG* Time,
-													DWORD* MultiCounterData,
-													LONGLONG* Frequency) {
+extern "C" __declspec(dllexport) void GetCounterValue(
+	PPERF_DATA_BLOCK g_pPerfDataHead,
+	PPERF_OBJECT_TYPE pObject,
+	PPERF_COUNTER_DEFINITION pCounter, 
+	PPERF_COUNTER_BLOCK pCounterDataBlock, 
+	ULONGLONG* Data,
+	LONGLONG* Time,
+	DWORD* MultiCounterData,
+	LONGLONG* Frequency) 
+{
 	PVOID pData = NULL;
 	UNALIGNED ULONGLONG* pullData = NULL;
 	PERF_COUNTER_DEFINITION* pBaseCounter = NULL;
@@ -458,7 +439,6 @@ extern "C" __declspec(dllexport) BOOL GetCounterValue(PPERF_DATA_BLOCK g_pPerfDa
 	case PERF_LARGE_RAW_BASE:
 		*Data = 0;
 		*Time = 0;
-		fSuccess = FALSE;
 		break;
 
 	case PERF_ELAPSED_TIME:
@@ -473,33 +453,30 @@ extern "C" __declspec(dllexport) BOOL GetCounterValue(PPERF_DATA_BLOCK g_pPerfDa
 	case PERF_COUNTER_HISTOGRAM_TYPE:
 		*Data = 0;
 		*Time = 0;
-		fSuccess = FALSE;
 		break;
 
 	//Encountered an unidentified counter.
 	default:
 		*Data = 0;
 		*Time = 0;
-		fSuccess = FALSE;
 		break;
 	}
-	return fSuccess;
 }
 
 
 
-extern "C" __declspec(dllexport) BOOL GetCalculatedValue(	DWORD CounterType0,
-															ULONGLONG Data0,
-															LONGLONG Time0,
-															DWORD MultiCounterData0,
-															LONGLONG Frequency0,
-															
-															DWORD CounterType1,
-															ULONGLONG Data1,
-															LONGLONG Time1,
-															DWORD MultiCounterData1,
-															LONGLONG Frequency1,
-															wchar_t* FinalValue) 
+extern "C" __declspec(dllexport) void GetCalculatedValue(
+	DWORD CounterType0,
+	ULONGLONG Data0,
+	LONGLONG Time0,
+	DWORD MultiCounterData0,
+	LONGLONG Frequency0,									
+	DWORD CounterType1,
+	ULONGLONG Data1,
+	LONGLONG Time1,
+	DWORD MultiCounterData1,
+	LONGLONG Frequency1,
+	wchar_t* FinalValue) 
 {
 	BOOL fSuccess = TRUE;
 	ULONGLONG numerator = 0;
@@ -675,19 +652,14 @@ extern "C" __declspec(dllexport) BOOL GetCalculatedValue(	DWORD CounterType0,
 		break;
 	}
 	cleanup:	
-	str = ss.str();
-	wcscpy(FinalValue, str.c_str());
-	return fSuccess;
+	wcscpy(FinalValue, ss.str().c_str());
 }
 
-
-
-extern "C" __declspec(dllexport) int GetNextCounter(PPERF_COUNTER_DEFINITION p, PPERF_COUNTER_DEFINITION* pp) {
+extern "C" __declspec(dllexport) void GetNextCounterPointer(PPERF_COUNTER_DEFINITION p, PPERF_COUNTER_DEFINITION* pp) {
 	*pp = (PPERF_COUNTER_DEFINITION)((PBYTE)p +	p->ByteLength);
-	return 0;
 }
 
-extern "C" __declspec(dllexport) int GetCounterType(int numbertype, char* name, char* description) 
+extern "C" __declspec(dllexport) void GetCounterType(int numbertype, char* name, char* description) 
 {
 	string Name;
 	string Description;
@@ -852,5 +824,4 @@ extern "C" __declspec(dllexport) int GetCounterType(int numbertype, char* name, 
 	}
 	strcpy(name, Name.c_str());
 	strcpy(description, Description.c_str());
-	return 0;
 }

@@ -26,7 +26,7 @@ namespace WindowsFormsApp1
             UIntPtr CounterBlockPntr,
             int counterType)
         {
-            bool qq = Externals.GetCounterValue(
+            Externals.GetCounterValue(
                 PerfDataBlockPntr,
                 PerfObjectTypePntr,
                 CurrentCounterPntr,

@@ -54,7 +54,7 @@ namespace WindowsFormsApp1
             StringBuilder SystemName = new StringBuilder(20);
             StringBuilder SystemTime = new StringBuilder(100);
 
-            int c = Externals.GetDataBlockInfo(PerfDataBlockPntr,
+            Externals.GetDataBlockInfo(PerfDataBlockPntr,
                 out long DefaultObject,
                 out int NumObjectTypes,
                 out long PerfFreq,

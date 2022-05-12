@@ -48,7 +48,7 @@ namespace WindowsFormsApp1
 
         public static ObjectType GetFromPointer(UIntPtr PerfObjectTypePntr)
         {
-            int z = Externals.GetPerfObjectTypeInfo(
+            Externals.GetPerfObjectTypeInfo(
                 PerfObjectTypePntr,
                 out int ObjectNameTitleIndex,
                 out int TotalByteLength,
