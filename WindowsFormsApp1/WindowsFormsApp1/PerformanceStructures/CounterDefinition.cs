@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace WindowsFormsApp1
 {
@@ -34,6 +35,61 @@ namespace WindowsFormsApp1
             DetailLevel = detailLevel;
             RawData = null;
             Value = null;
+        }
+
+        public static CounterDefinition GetFromPointer(UIntPtr CurrentCounterPntr)
+        {
+            int p = Externals.GetCounterInfo(
+                CurrentCounterPntr,
+                out int ByteLength,
+                out int CounterHelpTitleIndex,
+                out int CounterNameTitleIndex,
+                out int CounterSize,
+                out int CounterType,
+                out long DefaultScale,
+                out int DetailLevel);
+
+            return new CounterDefinition(
+                address: CurrentCounterPntr,
+                byteLength: ByteLength,
+                counterHelpTitleIndex: CounterHelpTitleIndex,
+                counterNameTitleIndex: CounterNameTitleIndex,
+                counterSize: CounterSize,
+                counterType: CounterType,
+                defaultScale: (DefaultScale & 2147483648) != 0 ? DefaultScale - 4294967295 - 1 : DefaultScale,
+                detailLevel: DetailLevel);
+        }
+
+        public void SetValueUsingOne()
+        {
+            StringBuilder Value = new StringBuilder(255);
+            Externals.GetCalculatedValue(
+                CounterType,
+                RawData.Data,
+                RawData.Time,
+                RawData.MultiCounterData,
+                RawData.Frequency,
+                0, 0, 0, 0, 0,
+                Value);
+            this.Value = Value.ToString();
+        }
+
+        public void SetValueUsingTwo(int counterType, RawData rd)
+        {
+            StringBuilder Value = new StringBuilder(255);
+            Externals.GetCalculatedValue(
+                CounterType,
+                RawData.Data,
+                RawData.Time,
+                RawData.MultiCounterData,
+                RawData.Frequency,
+                counterType,
+                rd.Data,
+                rd.Time,
+                rd.MultiCounterData,
+                rd.Frequency,
+                Value);
+            this.Value = Value.ToString();
         }
     }
 }

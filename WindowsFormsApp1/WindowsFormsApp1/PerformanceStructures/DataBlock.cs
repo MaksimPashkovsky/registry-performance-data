@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace WindowsFormsApp1
 {
@@ -46,5 +47,40 @@ namespace WindowsFormsApp1
             TotalByteLength = totalByteLength;
             Version = version;
         }
+
+        public static DataBlock GetFromPointer(UIntPtr PerfDataBlockPntr)
+        {
+            StringBuilder Signature = new StringBuilder(5);
+            StringBuilder SystemName = new StringBuilder(20);
+            StringBuilder SystemTime = new StringBuilder(100);
+
+            int c = Externals.GetDataBlockInfo(PerfDataBlockPntr,
+                out long DefaultObject,
+                out int NumObjectTypes,
+                out long PerfFreq,
+                out long PerfTime,
+                out long PerfTime100nSec,
+                out int Revision,
+                Signature,
+                SystemName,
+                SystemTime,
+                out int TotalByteLength,
+                out int Version);
+
+            return new DataBlock(
+                systemName: SystemName.ToString(),
+                systemTime: SystemTime.ToString(),
+                defaultObject: DefaultObject,
+                numObjectTypes: NumObjectTypes,
+                perfFreq: PerfFreq,
+                perfTime: PerfTime,
+                perfTime100nSec: PerfTime100nSec,
+                revision: Revision,
+                signature: Signature.ToString(),
+                totalByteLength: TotalByteLength,
+                version: Version,
+                address: PerfDataBlockPntr);
+        }
+
     }
 }

@@ -63,7 +63,7 @@
     <Compile Include="PerformanceStructures\ObjectType.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PerformanceStructures\RAW_DATA.cs" />
+    <Compile Include="PerformanceStructures\RawData.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

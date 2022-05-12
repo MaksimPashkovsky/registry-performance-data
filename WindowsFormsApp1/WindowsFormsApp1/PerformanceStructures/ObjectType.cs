@@ -45,5 +45,35 @@ namespace WindowsFormsApp1
             PerfTime = perfTime;
             PerfFreq = perfFreq;
         }
+
+        public static ObjectType GetFromPointer(UIntPtr PerfObjectTypePntr)
+        {
+            int z = Externals.GetPerfObjectTypeInfo(
+                PerfObjectTypePntr,
+                out int ObjectNameTitleIndex,
+                out int TotalByteLength,
+                out int ObjectHelpTitleIndex,
+                out int DetailLevel,
+                out int NumCounters,
+                out long DefaultCounter,
+                out long NumInstances,
+                out int CodePage,
+                out long PerfTime,
+                out long PerfFreq);
+
+            return new ObjectType(
+                objectNameTitleIndex: ObjectNameTitleIndex,
+                totalByteLength: TotalByteLength,
+                objectHelpTitleIndex: ObjectHelpTitleIndex,
+                detailLevel: DetailLevel,
+                numCounters: NumCounters,
+                defaultCounter: DefaultCounter,
+                numInstances: NumInstances,
+                codePage: CodePage,
+                perfTime: PerfTime,
+                perfFreq: PerfFreq,
+                address: PerfObjectTypePntr);
+        }
+
     }
 }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace WindowsFormsApp1
 {
@@ -27,6 +25,26 @@ namespace WindowsFormsApp1
             ParentObjectTitleIndex = parentObjectTitleIndex;
             ParentObjectInstance = parentObjectInstance;
             Name = name;
+        }
+
+        public static InstanceDefinition GetFromPointer(UIntPtr PerfInstanceDefinitionPntr, int codePage)
+        {
+            StringBuilder Name = new StringBuilder(300);
+
+            int o = Externals.GetInstanceInfo(
+                PerfInstanceDefinitionPntr,
+                codePage,
+                out int ByteLength,
+                out int ParentObjectTitleIndex,
+                out int ParentObjectInstance,
+                Name);
+
+            return new InstanceDefinition(
+                address: PerfInstanceDefinitionPntr,
+                byteLength: ByteLength,
+                parentObjectTitleIndex: ParentObjectTitleIndex,
+                parentObjectInstance: ParentObjectInstance,
+                name: Name.ToString());
         }
     }
 }
