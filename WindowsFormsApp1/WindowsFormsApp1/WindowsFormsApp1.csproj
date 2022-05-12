@@ -89,6 +89,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="dll\perf_dll.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Images\counter.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
