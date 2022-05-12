@@ -1,14 +1,10 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 
@@ -131,15 +127,15 @@ namespace WindowsFormsApp1
         private void Form1_Load(object sender, EventArgs e)
         {
             ImageList il = new ImageList();
-            il.Images.Add(Image.FromFile("open.png"));
-            il.Images.Add(Image.FromFile("data.png"));
-            il.Images.Add(Image.FromFile("key.jpg"));
-            il.Images.Add(Image.FromFile("file.png"));
+            il.Images.Add(Image.FromFile("Images\\open.png"));
+            il.Images.Add(Image.FromFile("Images\\data.png"));
+            il.Images.Add(Image.FromFile("Images\\key.jpg"));
+            il.Images.Add(Image.FromFile("Images\\file.png"));
             treeView1.ImageList = il;
 
             ImageList il2 = new ImageList();
-            il2.Images.Add(Image.FromFile("param.png"));
-            il2.Images.Add(Image.FromFile("counter.png"));
+            il2.Images.Add(Image.FromFile("Images\\param.png"));
+            il2.Images.Add(Image.FromFile("Images\\counter.png"));
             listView1.SmallImageList = il2;
 
             FillNames(names);
