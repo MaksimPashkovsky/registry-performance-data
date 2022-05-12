@@ -6,12 +6,21 @@ using System.Threading.Tasks;
 
 namespace WindowsFormsApp1
 {
-    public class RAW_DATA
+    public class RawData
     {
-        public int CounterType;
-        public ulong Data;          // Raw counter data
-        public long Time;           // Is a time value or a base value
-        public int MultiCounterData;  // Second raw counter value for multi-valued counters
-        public long Frequency;
+        public readonly int CounterType;
+        public readonly ulong Data;          // Raw counter data
+        public readonly long Time;           // Is a time value or a base value
+        public readonly int MultiCounterData;  // Second raw counter value for multi-valued counters
+        public readonly long Frequency;
+
+        public RawData(int counterType, ulong data, long time, int multiCounterData, long frequency)
+        {
+            CounterType = counterType;
+            Data = data;
+            Time = time;
+            MultiCounterData = multiCounterData;
+            Frequency = frequency;
+        }
     }
 }

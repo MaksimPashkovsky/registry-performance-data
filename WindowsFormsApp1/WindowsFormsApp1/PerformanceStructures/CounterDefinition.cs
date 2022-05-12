@@ -1,25 +1,39 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace WindowsFormsApp1
 {
     public class CounterDefinition
     {
-        public UIntPtr address;
+        public readonly UIntPtr Address;
+        public readonly int ByteLength;
+        public readonly int CounterHelpTitleIndex;
+        public readonly int CounterNameTitleIndex;
+        public readonly int CounterSize;
+        public readonly int CounterType;
+        public readonly long DefaultScale;
+        public readonly int DetailLevel;
+        public RawData RawData;
+        public string Value;
 
-        public int ByteLength;
-        public int CounterHelpTitleIndex;
-        public int CounterNameTitleIndex;
-        public int CounterSize;
-        public int CounterType;
-        public long DefaultScale;
-        public int DetailLevel;
-
-        public RAW_DATA RawData;
-
-        public string VALUE;
+        public CounterDefinition(UIntPtr address, 
+            int byteLength, 
+            int counterHelpTitleIndex, 
+            int counterNameTitleIndex, 
+            int counterSize, 
+            int counterType, 
+            long defaultScale, 
+            int detailLevel)
+        {
+            Address = address;
+            ByteLength = byteLength;
+            CounterHelpTitleIndex = counterHelpTitleIndex;
+            CounterNameTitleIndex = counterNameTitleIndex;
+            CounterSize = counterSize;
+            CounterType = counterType;
+            DefaultScale = defaultScale;
+            DetailLevel = detailLevel;
+            RawData = null;
+            Value = null;
+        }
     }
 }

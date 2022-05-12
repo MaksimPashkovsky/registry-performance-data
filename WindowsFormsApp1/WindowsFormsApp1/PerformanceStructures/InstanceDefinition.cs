@@ -8,11 +8,25 @@ namespace WindowsFormsApp1
 {
     public class InstanceDefinition
     {
-        public UIntPtr address;
-        public List<CounterDefinition> counters = new List<CounterDefinition>();
-        public int ByteLength;
-        public int ParentObjectTitleIndex;
-        public int ParentObjectInstance;
-        public string Name;
+        public readonly UIntPtr Address;
+        public List<CounterDefinition> Counters;
+        public readonly int ByteLength;
+        public readonly int ParentObjectTitleIndex;
+        public readonly int ParentObjectInstance;
+        public readonly string Name;
+
+        public InstanceDefinition(UIntPtr address,
+            int byteLength,
+            int parentObjectTitleIndex,
+            int parentObjectInstance,
+            string name)
+        {
+            Address = address;
+            Counters = new List<CounterDefinition>();
+            ByteLength = byteLength;
+            ParentObjectTitleIndex = parentObjectTitleIndex;
+            ParentObjectInstance = parentObjectInstance;
+            Name = name;
+        }
     }
 }

@@ -64,7 +64,6 @@ namespace WindowsFormsApp1
         public static extern int GetNextInstance(UIntPtr p, out UIntPtr pp);
         
         [DllImport("dll\\perf_dll.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-        //[HandleProcessCorruptedStateExceptions]
         public static extern int GetInstanceInfo(   UIntPtr p,
                                                     int CodePage,
                                                     out int ByteLength,
@@ -113,8 +112,8 @@ namespace WindowsFormsApp1
         public static extern int GetCounterType(int numbertype, StringBuilder name, StringBuilder description);
 
 
-        public DataBlock PerfDataBlock1 = new DataBlock();
-        public DataBlock PerfDataBlock2 = new DataBlock();
+        public DataBlock PerfDataBlock1;
+        public DataBlock PerfDataBlock2;
 
         Dictionary<int, string> names = new Dictionary<int, string>();
         Dictionary<int, string> helps = new Dictionary<int, string>();
@@ -139,17 +138,16 @@ namespace WindowsFormsApp1
             listView1.SmallImageList = il2;
 
             FillNames(names);
-
             FillHelps(helps);
 
-            GetPerformanceData(PerfDataBlock1);
-            GetPerformanceData(PerfDataBlock2);
+            PerfDataBlock1 = GetPerformanceData();
+            PerfDataBlock2 = GetPerformanceData();
 
             CalculateCounterValues(PerfDataBlock1, PerfDataBlock2);
 
             treeView1.Nodes.Add("DataBlock", "DataBlock", 1);
             
-            foreach (ObjectType obj in PerfDataBlock1.objects)
+            foreach (ObjectType obj in PerfDataBlock1.Objects)
             {
                 TreeNode objNode = new TreeNode();
                 int index = obj.ObjectNameTitleIndex;
@@ -163,9 +161,9 @@ namespace WindowsFormsApp1
                     objNode.Text = index.ToString();
                 }
                 
-                if (obj.instances.Count > 0)
+                if (obj.Instances.Count > 0)
                 {
-                    foreach (InstanceDefinition inst in obj.instances)
+                    foreach (InstanceDefinition inst in obj.Instances)
                     {
                         objNode.Nodes.Add(inst.Name, inst.Name, 3);
                     }
@@ -182,14 +180,14 @@ namespace WindowsFormsApp1
         {
             StringBuilder Value = new StringBuilder(255);
 
-            foreach (ObjectType obj in PerfDataBlock1.objects)
+            foreach (ObjectType obj in PerfDataBlock1.Objects)
             {
-                foreach (InstanceDefinition inst in obj.instances)
+                foreach (InstanceDefinition inst in obj.Instances)
                 {
-                    foreach (CounterDefinition counter in inst.counters)
+                    foreach (CounterDefinition counter in inst.Counters)
                     {
                         CounterDefinition counter2 = GetCounter(PerfDataBlock2, counter.CounterNameTitleIndex, inst.Name, obj.ObjectNameTitleIndex);
-                        RAW_DATA rd = counter2.RawData;
+                        RawData rd = counter2.RawData;
                         if (counter2 != null)
                         {
                             bool b = GetCalculatedValue(counter.CounterType,
@@ -218,16 +216,16 @@ namespace WindowsFormsApp1
                                                         0,
                                                         Value);
                         }
-                        counter.VALUE = Value.ToString();
+                        counter.Value = Value.ToString();
                         Value.Clear();
                     }
 
                 }
                 
-                foreach (CounterDefinition counter in obj.counters)
+                foreach (CounterDefinition counter in obj.Counters)
                 {
                     CounterDefinition counter2 = GetCounter(PerfDataBlock2, counter.CounterNameTitleIndex, obj.ObjectNameTitleIndex);
-                    RAW_DATA rd = counter2.RawData;
+                    RawData rd = counter2.RawData;
                     if (counter2 != null)
                     {
                         bool b = GetCalculatedValue(counter.CounterType,
@@ -256,7 +254,7 @@ namespace WindowsFormsApp1
                                                     0,
                                                     Value);
                     }
-                    counter.VALUE = Value.ToString();
+                    counter.Value = Value.ToString();
                     Value.Clear();
                 }
 
@@ -265,15 +263,15 @@ namespace WindowsFormsApp1
 
         private CounterDefinition GetCounter(DataBlock PerfDataBlock, int counterIndex, string InstanceName, int ObjectIndex)
         {
-            foreach (ObjectType obj in PerfDataBlock.objects)
+            foreach (ObjectType obj in PerfDataBlock.Objects)
             {
                 if (obj.ObjectNameTitleIndex == ObjectIndex)
                 {
-                    foreach (InstanceDefinition inst in obj.instances)
+                    foreach (InstanceDefinition inst in obj.Instances)
                     {
                         if (inst.Name.Equals(InstanceName))
                         {
-                            foreach (CounterDefinition counter in inst.counters)
+                            foreach (CounterDefinition counter in inst.Counters)
                             {
                                 if (counter.CounterNameTitleIndex == counterIndex)
                                 {
@@ -292,11 +290,11 @@ namespace WindowsFormsApp1
 
         private CounterDefinition GetCounter(DataBlock PerfDataBlock, int counterIndex, int ObjectIndex)
         {
-            foreach (ObjectType obj in PerfDataBlock.objects)
+            foreach (ObjectType obj in PerfDataBlock.Objects)
             {
                 if (obj.ObjectNameTitleIndex == ObjectIndex)
                 {
-                    foreach (CounterDefinition counter in obj.counters)
+                    foreach (CounterDefinition counter in obj.Counters)
                     {
                         if (counter.CounterNameTitleIndex == counterIndex)
                         {
@@ -310,8 +308,8 @@ namespace WindowsFormsApp1
             return null;
         }
 
-        private void GetPerformanceData(DataBlock PerfDataBlock)
-        {
+        private DataBlock GetPerformanceData()
+        {   
             UIntPtr PerfDataBlockPntr = new UIntPtr();
             UIntPtr PerfObjectTypePntr = new UIntPtr();
             UIntPtr CounterDefinitionPntr = new UIntPtr();
@@ -334,30 +332,31 @@ namespace WindowsFormsApp1
             int Version;
 
             int c = GetDataBlockInfo(PerfDataBlockPntr,
-                                        out DefaultObject,
-                                        out NumObjectTypes,
-                                        out PerfFreq,
-                                        out PerfTime,
-                                        out PerfTime100nSec,
-                                        out Revision,
-                                        Signature,
-                                        SystemName,
-                                        SystemTime,
-                                        out TotalByteLength,
-                                        out Version);
-
-            PerfDataBlock.SystemName = SystemName.ToString();
-            PerfDataBlock.SystemTime = SystemTime.ToString();
-            PerfDataBlock.DefaultObject = DefaultObject;
-            PerfDataBlock.NumObjectTypes = NumObjectTypes;
-            PerfDataBlock.PerfFreq = PerfFreq;
-            PerfDataBlock.PerfTime = PerfTime;
-            PerfDataBlock.PerfTime100nSec = PerfTime100nSec;
-            PerfDataBlock.Revision = Revision;
-            PerfDataBlock.Signature = Signature.ToString();
-            PerfDataBlock.TotalByteLength = TotalByteLength;
-            PerfDataBlock.Version = Version;
-            PerfDataBlock.address = PerfDataBlockPntr;
+                out DefaultObject,
+                out NumObjectTypes,
+                out PerfFreq,
+                out PerfTime,
+                out PerfTime100nSec,
+                out Revision,
+                Signature,
+                SystemName,
+                SystemTime,
+                out TotalByteLength,
+                out Version);
+            
+            DataBlock PerfDataBlock = new DataBlock(
+                systemName: SystemName.ToString(),
+                systemTime: SystemTime.ToString(),
+                defaultObject: DefaultObject,
+                numObjectTypes: NumObjectTypes,
+                perfFreq: PerfFreq,
+                perfTime: PerfTime,
+                perfTime100nSec: PerfTime100nSec,
+                revision: Revision,
+                signature: Signature.ToString(),
+                totalByteLength: TotalByteLength,
+                version: Version,
+                address: PerfDataBlockPntr);
 
             int ObjectNameTitleIndex;
             int ObjectHelpTitleIndex;
@@ -384,41 +383,34 @@ namespace WindowsFormsApp1
             int MultiCounterData;
             long Frequency;
 
-
-            ObjectType PerfObjectType;
-            InstanceDefinition PerfInstDef;
-            CounterDefinition PerfCounterDef;
-            RAW_DATA rd;
-
             int t = GetFirstObjectType(PerfDataBlockPntr, out PerfObjectTypePntr);
 
             for (int i = 0; i < NumObjectTypes; i++)
             {
-                PerfObjectType = new ObjectType();
                 int z = GetPerfObjectTypeInfo(PerfObjectTypePntr,
-                                                out ObjectNameTitleIndex,
-                                                out TotalByteLength,
-                                                out ObjectHelpTitleIndex,
-                                                out DetailLevel,
-                                                out NumCounters,
-                                                out DefaultCounter,
-                                                out NumInstances,
-                                                out CodePage,
-                                                out PerfTime,
-                                                out PerfFreq);
+                    out ObjectNameTitleIndex,
+                    out TotalByteLength,
+                    out ObjectHelpTitleIndex,
+                    out DetailLevel,
+                    out NumCounters,
+                    out DefaultCounter,
+                    out NumInstances,
+                    out CodePage,
+                    out PerfTime,
+                    out PerfFreq);
 
-                PerfObjectType.ObjectNameTitleIndex = ObjectNameTitleIndex;
-                PerfObjectType.TotalByteLength = TotalByteLength;
-                PerfObjectType.ObjectHelpTitleIndex = ObjectHelpTitleIndex;
-                PerfObjectType.DetailLevel = DetailLevel;
-                PerfObjectType.NumCounters = NumCounters;
-                PerfObjectType.DefaultCounter = DefaultCounter;
-                PerfObjectType.NumInstances = NumInstances;
-                PerfObjectType.CodePage = CodePage;
-                PerfObjectType.PerfTime = PerfTime;
-                PerfObjectType.PerfFreq = PerfFreq;
-                PerfObjectType.address = PerfObjectTypePntr;
-
+                ObjectType PerfObjectType = new ObjectType(
+                    objectNameTitleIndex: ObjectNameTitleIndex,
+                    totalByteLength: TotalByteLength,
+                    objectHelpTitleIndex: ObjectHelpTitleIndex,
+                    detailLevel: DetailLevel,
+                    numCounters: NumCounters,
+                    defaultCounter: DefaultCounter,
+                    numInstances: NumInstances,
+                    codePage: CodePage,
+                    perfTime: PerfTime,
+                    perfFreq: PerfFreq,
+                    address: PerfObjectTypePntr);
 
                 int q = GetCounterDefinition(PerfObjectTypePntr, out CounterDefinitionPntr);
 
@@ -428,20 +420,20 @@ namespace WindowsFormsApp1
 
                     for (int j = 0; j < NumInstances; j++)
                     {
-                        PerfInstDef = new InstanceDefinition();
-
                         int o = GetInstanceInfo(PerfInstanceDefinitionPntr,
-                                                PerfObjectType.CodePage,
-                                                out ByteLength,
-                                                out ParentObjectTitleIndex,
-                                                out ParentObjectInstance,
-                                                Name);
+                            PerfObjectType.CodePage,
+                            out ByteLength,
+                            out ParentObjectTitleIndex,
+                            out ParentObjectInstance,
+                            Name);
 
-                        PerfInstDef.address = PerfInstanceDefinitionPntr;
-                        PerfInstDef.ByteLength = ByteLength;
-                        PerfInstDef.ParentObjectTitleIndex = ParentObjectTitleIndex;
-                        PerfInstDef.ParentObjectInstance = ParentObjectInstance;
-                        PerfInstDef.Name = Name.ToString();
+                        InstanceDefinition PerfInstDef = new InstanceDefinition(
+                            address: PerfInstanceDefinitionPntr,
+                            byteLength: ByteLength,
+                            parentObjectTitleIndex: ParentObjectTitleIndex,
+                            parentObjectInstance: ParentObjectInstance,
+                            name: Name.ToString());
+
                         Name.Clear();
 
                         CurrentCounterPntr = CounterDefinitionPntr;
@@ -450,58 +442,49 @@ namespace WindowsFormsApp1
 
                         for (int k = 0; k < PerfObjectType.NumCounters; k++)
                         {
-                            PerfCounterDef = new CounterDefinition();
-
                             int p = GetCounterInfo(CurrentCounterPntr,
-                                                    out ByteLength,
-                                                    out CounterHelpTitleIndex,
-                                                    out CounterNameTitleIndex,
-                                                    out CounterSize,
-                                                    out CounterType,
-                                                    out DefaultScale,
-                                                    out DetailLevel);
+                                out ByteLength,
+                                out CounterHelpTitleIndex,
+                                out CounterNameTitleIndex,
+                                out CounterSize,
+                                out CounterType,
+                                out DefaultScale,
+                                out DetailLevel);
 
-                            PerfCounterDef.address = CurrentCounterPntr;
-                            PerfCounterDef.ByteLength = ByteLength;
-                            PerfCounterDef.CounterHelpTitleIndex = CounterHelpTitleIndex;
-                            PerfCounterDef.CounterNameTitleIndex = CounterNameTitleIndex;
-                            PerfCounterDef.CounterSize = CounterSize;
-                            PerfCounterDef.CounterType = CounterType;
-
-                            long scale = 0;
-                            if ((DefaultScale & 2147483648) != 0)
-                            {
-                                scale = DefaultScale - 4294967295 - 1;
-                            }
-                            else scale = DefaultScale;
-                            PerfCounterDef.DefaultScale = scale;
-                            PerfCounterDef.DetailLevel = DetailLevel;
+                            CounterDefinition PerfCounterDef = new CounterDefinition(
+                                address: CurrentCounterPntr,
+                                byteLength: ByteLength,
+                                counterHelpTitleIndex: CounterHelpTitleIndex,
+                                counterNameTitleIndex: CounterNameTitleIndex,
+                                counterSize: CounterSize,
+                                counterType: CounterType,
+                                defaultScale: (DefaultScale & 2147483648) != 0 ? DefaultScale - 4294967295 - 1 : DefaultScale,
+                                detailLevel: DetailLevel);
 
                             bool qq = GetCounterValue(PerfDataBlockPntr,
-                                                        PerfObjectTypePntr,
-                                                        CurrentCounterPntr,
-                                                        CounterBlockPntr,
-                                                        out Data,
-                                                        out Time,
-                                                        out MultiCounterData,
-                                                        out Frequency);
+                                PerfObjectTypePntr,
+                                CurrentCounterPntr,
+                                CounterBlockPntr,
+                                out Data,
+                                out Time,
+                                out MultiCounterData,
+                                out Frequency);
 
-                            rd = new RAW_DATA();
-
-                            rd.CounterType = PerfCounterDef.CounterType;
-                            rd.Data = Data;
-                            rd.Time = Time;
-                            rd.MultiCounterData = MultiCounterData;
-                            rd.Frequency = Frequency;
+                            RawData rd = new RawData(
+                                counterType: PerfCounterDef.CounterType,
+                                data: Data,
+                                time: Time,
+                                multiCounterData: MultiCounterData,
+                                frequency: Frequency);
 
                             PerfCounterDef.RawData = rd;
 
-                            PerfInstDef.counters.Add(PerfCounterDef);
+                            PerfInstDef.Counters.Add(PerfCounterDef);
 
                             int s = GetNextCounter(CurrentCounterPntr, out CurrentCounterPntr);
                         }
 
-                        PerfObjectType.instances.Add(PerfInstDef);
+                        PerfObjectType.Instances.Add(PerfInstDef);
 
                         int y = GetNextInstance(CounterBlockPntr, out PerfInstanceDefinitionPntr);
                     }
@@ -512,59 +495,53 @@ namespace WindowsFormsApp1
 
                     for (int j = 0; j < PerfObjectType.NumCounters; j++)
                     {
-                        PerfCounterDef = new CounterDefinition();
-
                         int n = GetCounterInfo(CounterDefinitionPntr,
-                                                out ByteLength,
-                                                out CounterHelpTitleIndex,
-                                                out CounterNameTitleIndex,
-                                                out CounterSize,
-                                                out CounterType,
-                                                out DefaultScale,
-                                                out DetailLevel);
+                            out ByteLength,
+                            out CounterHelpTitleIndex,
+                            out CounterNameTitleIndex,
+                            out CounterSize,
+                            out CounterType,
+                            out DefaultScale,
+                            out DetailLevel);
 
-                        PerfCounterDef.address = CounterDefinitionPntr;
-                        PerfCounterDef.ByteLength = ByteLength;
-                        PerfCounterDef.CounterHelpTitleIndex = CounterHelpTitleIndex;
-                        PerfCounterDef.CounterNameTitleIndex = CounterNameTitleIndex;
-                        PerfCounterDef.CounterSize = CounterSize;
-                        PerfCounterDef.CounterType = CounterType;
-                        long scale = 0;
-                        if ((DefaultScale & 2147483648) != 0)
-                        {
-                            scale = DefaultScale - 4294967295 - 1;
-                        }
-                        else scale = DefaultScale;
-                        PerfCounterDef.DefaultScale = scale;
-                        PerfCounterDef.DetailLevel = DetailLevel;
+                        CounterDefinition PerfCounterDef = new CounterDefinition(
+                            address: CounterDefinitionPntr,
+                            byteLength: ByteLength,
+                            counterHelpTitleIndex: CounterHelpTitleIndex,
+                            counterNameTitleIndex: CounterNameTitleIndex,
+                            counterSize: CounterSize,
+                            counterType: CounterType,
+                            defaultScale: (DefaultScale & 2147483648) != 0 ? DefaultScale - 4294967295 - 1 : DefaultScale,
+                            detailLevel: DetailLevel);
 
                         bool qq = GetCounterValue(PerfDataBlockPntr,
-                                                    PerfObjectTypePntr,
-                                                    CounterDefinitionPntr,
-                                                    CounterBlockPntr,
-                                                    out Data,
-                                                    out Time,
-                                                    out MultiCounterData,
-                                                    out Frequency);
+                            PerfObjectTypePntr,
+                            CounterDefinitionPntr,
+                            CounterBlockPntr,
+                            out Data,
+                            out Time,
+                            out MultiCounterData,
+                            out Frequency);
 
-                        rd = new RAW_DATA();
-                        rd.CounterType = PerfCounterDef.CounterType;
-                        rd.Data = Data;
-                        rd.Time = Time;
-                        rd.MultiCounterData = MultiCounterData;
-                        rd.Frequency = Frequency;
+                        RawData rd = new RawData(
+                            counterType: PerfCounterDef.CounterType,
+                            data: Data,
+                            time: Time,
+                            multiCounterData: MultiCounterData,
+                            frequency: Frequency);
 
                         PerfCounterDef.RawData = rd;
 
-                        PerfObjectType.counters.Add(PerfCounterDef);
+                        PerfObjectType.Counters.Add(PerfCounterDef);
 
                         int m = GetNextCounter(CounterDefinitionPntr, out CounterDefinitionPntr);
                     }
                 }
-                PerfDataBlock.objects.Add(PerfObjectType);
+                PerfDataBlock.Objects.Add(PerfObjectType);
 
                 int v = GetNextObjectType(PerfObjectTypePntr, out PerfObjectTypePntr);
             }
+            return PerfDataBlock;
         }
 
         private void FillNames(Dictionary<int, string> names)
@@ -644,7 +621,7 @@ namespace WindowsFormsApp1
             }
             else if (t.Parent.Text.Equals("DataBlock"))
             {
-                ObjectType obj = PerfDataBlock1.objects.ElementAt(t.Index);
+                ObjectType obj = PerfDataBlock1.Objects.ElementAt(t.Index);
 
                 ListViewItem lvi = new ListViewItem(new string[] { "TotalByteLength", obj.TotalByteLength.ToString() });
                 lvi.ImageIndex = 0;
@@ -674,17 +651,17 @@ namespace WindowsFormsApp1
                 lvi.ImageIndex = 0;
                 listView1.Items.Add(lvi);
 
-                foreach (CounterDefinition counter in obj.counters)
+                foreach (CounterDefinition counter in obj.Counters)
                 {
                     if (names.ContainsKey(counter.CounterNameTitleIndex))
                     {
-                        lvi = new ListViewItem(new string[] { names[counter.CounterNameTitleIndex], counter.VALUE });
+                        lvi = new ListViewItem(new string[] { names[counter.CounterNameTitleIndex], counter.Value });
                         lvi.ImageIndex = 1;
                         listView1.Items.Add(lvi);
                     }
                     else
                     {
-                        lvi = new ListViewItem(new string[] { counter.CounterNameTitleIndex.ToString(), counter.VALUE });
+                        lvi = new ListViewItem(new string[] { counter.CounterNameTitleIndex.ToString(), counter.Value });
                         lvi.ImageIndex = 1;
                         listView1.Items.Add(lvi);
                     }
@@ -699,25 +676,25 @@ namespace WindowsFormsApp1
             }
             else
             {
-                ObjectType obj = PerfDataBlock1.objects.ElementAt(t.Parent.Index);
-                InstanceDefinition inst = obj.instances.ElementAt(t.Index);
+                ObjectType obj = PerfDataBlock1.Objects.ElementAt(t.Parent.Index);
+                InstanceDefinition inst = obj.Instances.ElementAt(t.Index);
 
                 ListViewItem lvi = new ListViewItem(new string[] { "Name", inst.Name });
                 lvi.ImageIndex = 0;
                 listView1.Items.Add(lvi);
 
 
-                foreach (CounterDefinition counter in inst.counters)
+                foreach (CounterDefinition counter in inst.Counters)
                 {
                     if (names.ContainsKey(counter.CounterNameTitleIndex))
                     {
-                        lvi = new ListViewItem(new string[] { names[counter.CounterNameTitleIndex], counter.VALUE });
+                        lvi = new ListViewItem(new string[] { names[counter.CounterNameTitleIndex], counter.Value });
                         lvi.ImageIndex = 1;
                         listView1.Items.Add(lvi);
                     }
                     else
                     {
-                        lvi = new ListViewItem(new string[] { counter.CounterNameTitleIndex.ToString(), counter.VALUE });
+                        lvi = new ListViewItem(new string[] { counter.CounterNameTitleIndex.ToString(), counter.Value });
                         lvi.ImageIndex = 1;
                         listView1.Items.Add(lvi);
                     }
@@ -847,9 +824,9 @@ namespace WindowsFormsApp1
 
                         int objindex = t.Index;
 
-                        ObjectType obj = PerfDataBlock1.objects.ElementAt(objindex);
+                        ObjectType obj = PerfDataBlock1.Objects.ElementAt(objindex);
 
-                        CounterDefinition counter = obj.counters.ElementAt(newindex);
+                        CounterDefinition counter = obj.Counters.ElementAt(newindex);
 
                         StringBuilder name = new StringBuilder(50);
                         StringBuilder description = new StringBuilder(500);
@@ -879,9 +856,9 @@ namespace WindowsFormsApp1
                     default:
                         int newindex = index - 1;
 
-                        ObjectType obj = PerfDataBlock1.objects.ElementAt(tp.Index);
-                        InstanceDefinition inst = obj.instances.ElementAt(t.Index);
-                        CounterDefinition counter = inst.counters.ElementAt(newindex);
+                        ObjectType obj = PerfDataBlock1.Objects.ElementAt(tp.Index);
+                        InstanceDefinition inst = obj.Instances.ElementAt(t.Index);
+                        CounterDefinition counter = inst.Counters.ElementAt(newindex);
 
                         StringBuilder name = new StringBuilder(50);
                         StringBuilder description = new StringBuilder(500);
