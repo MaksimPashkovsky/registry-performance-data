@@ -326,3 +326,10 @@ typedef struct _PERF_COUNTER_BLOCK {
     DWORD           ByteLength;         // Length in bytes of this structure, including the following counters
 } PERF_COUNTER_BLOCK, *PPERF_COUNTER_BLOCK;
 ```
+# Used sources
+1. Peter Hipson - Mastering Windows XP Registry / Copyright © 2002 SYBEX Inc., 1151 Marina Village Parkway, Alameda, CA 94501 - 556 p.
+2. HKEY_PERFORMANCE_DATA – виртуальный реестр // Страничка tripsin’a –  Mode of access:  http://tripsin.narod.ru/articles/virtreg/virtregistry.htm - Date of access: 10.12.2021.
+3. Счётчики производительности // RSDN. –  Mode of access:  https://www.rsdn.org/?article/baseserv/perfcounters1.xml – Date of access: 10.12.2021.
+4. Retrieving Counter Data // Microsoft –  Mode of access:  https://docs.microsoft.com/en-us/windows/win32/perfctrs/retrieving-counter-data - Date of access: 10.12.2021.
+5. Calculating Counter Values // Microsoft – Mode of access: https://docs.microsoft.com/en-us/windows/win32/perfctrs/calculating-counter-values – Date of access: 10.12.2021.
+6. Using the Registry Functions to Consume Counter Data // Microsoft. – Mode of access:https://docs.microsoft.com/en-us/windows/win32/perfctrs/using-the-registry-functions-to-consume-counter-data – Date of access: 10.12.2021
