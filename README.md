@@ -155,7 +155,7 @@ field during counter data acquisition time.
 After building the DLL, you need to connect it to the project and declare the necessary functions.  
 For example, the library defines the ***GetInstanceInfo*** function to get information about the PERF_INSTANCE_DEFINITION structure:
 ```cpp
-extern “C” __declspec(dllexport) int GetInstanceInfo(
+extern "C" __declspec(dllexport) int GetInstanceInfo(
     PPERF_INSTANCE_DEFINITION p,
     DWORD CodePage,
     DWORD* ByteLenght,
@@ -165,7 +165,7 @@ extern “C” __declspec(dllexport) int GetInstanceInfo(
 ```
 In C# code, it should be declared like this:
 ```csharp
-[DllImport(“dll\\perf_dll.dll”,CallingConvention=CallingConvention.Cdecl,Charset=Charset.Unicode)]
+[DllImport("dll\\perf_dll.dll",CallingConvention=CallingConvention.Cdecl,Charset=Charset.Unicode)]
 public static extern int GetInstanceInfo (
     UintPtr p,
     int CodePage,
