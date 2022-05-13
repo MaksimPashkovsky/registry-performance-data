@@ -1,5 +1,6 @@
 #pragma once
 #include <winperf.h>
+
 extern "C" __declspec(dllexport) void GetDataBlockPointer(PPERF_DATA_BLOCK* p);
 
 extern "C" __declspec(dllexport) void GetDataBlockInfo(

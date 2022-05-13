@@ -6,8 +6,8 @@ namespace WindowsFormsApp1
     public class ObjectType
     {
         public readonly UIntPtr Address;
-        public List<InstanceDefinition> Instances;
-        public List<CounterDefinition> Counters;
+        private List<InstanceDefinition> Instances;
+        private List<CounterDefinition> Counters;
         public readonly int ObjectNameTitleIndex;
         public readonly int TotalByteLength;
         public readonly int ObjectHelpTitleIndex;
@@ -18,6 +18,16 @@ namespace WindowsFormsApp1
         public readonly int CodePage;
         public readonly long PerfTime;
         public readonly long PerfFreq;
+
+        public List<InstanceDefinition> GetInstances()
+        {
+            return Instances;
+        }
+
+        public List<CounterDefinition> GetCounters()
+        {
+            return Counters;
+        }
 
         public ObjectType(UIntPtr address, 
             int objectNameTitleIndex, 
