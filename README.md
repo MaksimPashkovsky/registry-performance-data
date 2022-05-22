@@ -39,8 +39,8 @@ Function's signatures are described in **perf_dll.h** header file.
 
 # Implementation
 The HKEY_PERFORMANCE_DATA key is different from the others.     
-For example, listing its subkeys using *RegEnumKeyEx* will not work.    
-Access to the information in this section must be obtained using the *RegQueryValueEx* function (Appendix A).     
+For example, listing its subkeys using `RegEnumKeyEx` will not work.    
+Access to the information in this section must be obtained using the `RegQueryValueEx` function (**Appendix A**).     
 When accessing the HKEY_PERFORMANCE_DATA key, it needs to be used a little differently:
 
 ```cpp
@@ -63,19 +63,19 @@ while (RegQueryValueEx(
 }
 ```
 As the second parameter, it needs to specify a set of counters in the form of a null-terminated string:
-* “Global” – the main set of counters.
-* “Costly” – counters that take a long time to collect data.
-* List of indexes of required counters separated by spaces, for example: “230 232 740”.
+* "Global" – the main set of counters.
+* "Costly" – counters that take a long time to collect data.
+* List of indexes of required counters separated by spaces, for example: "230 232 740".
 
-Features that distinguish this code from the usual use of *RegQueryValueEx*:
+Features that distinguish this code from the usual use of `RegQueryValueEx`:
 * HKEY_PERFORMANCE_DATA is used as a handle to the registry key.
 * The string used as the value is not a regular value.
 * The size of the returned data changes dynamically, so it is not possible to predict the required buffer size in advance.
 * The main difference is the returned data.
 
-After calling the *RegQueryValueEx* function, the following sequence of actions occurs:
+After calling the `RegQueryValueEx` function, the following sequence of actions occurs:
 1. The function opens key **HKLM\System\CurrentControlSet\Services** and looks through all the subkeys.
-2. In each of them, function looks for the **“Performance”** subkey
+2. In each of them, function looks for the **"Performance"** subkey
 3. If it finds it, it reads the parameters:
    * **"Library"** - name of the dll that returns the data.
    * **"Object List"** – list of indexes of returned counters.
@@ -83,39 +83,39 @@ After calling the *RegQueryValueEx* function, the following sequence of actions 
    * **"Collect"** - name of the function that returns the values of counters.
    * **"Close"** - name of the function to be called when the dll is no longer needed.
 4. If the **"Object List"** contains the index of the required counter, then the function loads the dll and calls the **"Open"** function.
-5. The **"Collect"** function is called, where the buffer is passed and dll fills it with a data block. If everything is ok, then **ERROR_SUCCESS** is returned, if the buffer is too small, then **ERROR_MORE_DATA**.
-6. All data blocks from all dlls are collected together, the **PERF_DATA_BLOCK** structure is added to them in front and returned in the fifth parameter lbcbData of the ***RegQueryValueEx*** function.
+5. The **"Collect"** function is called, where the buffer is passed and dll fills it with a data block. If everything is ok, then `ERROR_SUCCESS` is returned, if the buffer is too small, then `ERROR_MORE_DATA`.
+6. All data blocks from all dlls are collected together, the `PERF_DATA_BLOCK` structure is added to them in front and returned in the fifth parameter `lbcbData` of the `RegQueryValueEx` function.
 
-As a result, ***RegQueryValueEx*** returns **ERROR_SUCCESS** and a large data structure 
-(hundreds of kilobytes) in the fifth parameter **lpcbData**, or **ERROR_MORE_DATA** and then **lpcbData** 
-is undefined. When getting **ERROR_MORE_DATA**, allocate a larger buffer and call the ***RegQueryValueEx*** 
-function again until it returns **ERROR_SUCCESS**.
+As a result, `RegQueryValueEx` returns `ERROR_SUCCESS` and a large data structure 
+(hundreds of kilobytes) in the fifth parameter `lpcbData`, or `ERROR_MORE_DATA` and then `lpcbData` 
+is undefined. When getting `ERROR_MORE_DATA`, allocate a larger buffer and call the `RegQueryValueEx` 
+function again until it returns `ERROR_SUCCESS`.
 
-The data returned by ***RegQueryValueEx*** has a clear hierarchy:
-* At the top level is the entire block of data as a whole. It is described by the **PERF_DATA_BLOCK** structure (Appendix B).
+The data returned by `RegQueryValueEx` has a clear hierarchy:
+* At the top level is the entire block of data as a whole. It is described by the `PERF_DATA_BLOCK` structure (**Appendix B**).
 * After it are information blocks for each object.
 
 ![](images/3.png)    
-Their number is specified in the **NumObjectTypes**
-field of the **PERF_DATA_BLOCK** structure. At the beginning of the information block there is a header 
-in the form of a **PERF_OBJECT_TYPE** structure (Appendix C).
+Their number is specified in the `NumObjectTypes`
+field of the `PERF_DATA_BLOCK` structure. At the beginning of the information block there is a header 
+in the form of a `PERF_OBJECT_TYPE` structure (**Appendix C**).
 * Then there are descriptions of all counters available for this type of object, in the form of 
-**PERF_COUNTER_DEFINITION** structures (Appendix D). Their number is defined in the **NumCounters** 
-field of the **PERF_OBJECT_TYPE** structure.
+`PERF_COUNTER_DEFINITION` structures (**Appendix D**). Their number is defined in the `NumCounters` 
+field of the `PERF_OBJECT_TYPE` structure.
 
 Then there are two options:
 1. If an object type has instances, then blocks with descriptions of these instances follow. 
 
 ![](images/4.png)    
-The number of these blocks is in the **NumInstances** field of the **PERF_OBJECT_TYPE** structure. 
-At the beginning of each block is the **PERF_INSTANCE_DEFINITION** structure (Appendix E). It is followed by 
-a **PERF_COUNTER_BLOCK** structure (Appendix F) with a single **ByteLength** field: the size of the counter data 
-block, including the size of the **PERF_COUNTER_BLOCK** structure. Then the actual counter data 
-for the object instance. The data offset of each counter from the start of the **PERF_COUNTER_BLOCK** 
-is stored in the **CounterOffset** field of the **PERF_COUNTER_DEFINITION** structure.
+The number of these blocks is in the `NumInstances` field of the `PERF_OBJECT_TYPE` structure. 
+At the beginning of each block is the `PERF_INSTANCE_DEFINITION` structure (**Appendix E**). It is followed by 
+a `PERF_COUNTER_BLOCK` structure (**Appendix F**) with a single `ByteLength` field: the size of the counter data 
+block, including the size of the `PERF_COUNTER_BLOCK` structure. Then the actual counter data 
+for the object instance. The data offset of each counter from the start of the `PERF_COUNTER_BLOCK` 
+is stored in the `CounterOffset` field of the `PERF_COUNTER_DEFINITION` structure.
 2. If the object has no instances, then all counters are related to the object type itself. 
-In this case, **PERF_COUNTER_DEFINITION** is immediately followed by only one counter data block, 
-beginning with **PERF_COUNTER_BLOCK**
+In this case, `PERF_COUNTER_DEFINITION` is immediately followed by only one counter data block, 
+beginning with `PERF_COUNTER_BLOCK`
 
 ![](images/5.png)
 
@@ -125,7 +125,7 @@ names and reference information. They are contained in the registry key
 
 To get the value of the counter, it is not enough to know its offset. 
 You need to know the size of the data and its type. 
-All this can be determined by the **CounterType** field. 
+All this can be determined by the `CounterType` field. 
 It consists of bit fields that define various counter properties:
 
 | First bit | End bit | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
@@ -147,13 +147,13 @@ using data from other counters and fields of the structures described above**.
 
 Many counters need 2 measurements to display the real value. For example, the CPU 
 usage of a process is reported in the "% Processor Time" counter, which is of type 
-PERF_100NSEC_TIMER. To get the actual load value in percent, you need to remove two 
+`PERF_100NSEC_TIMER`. To get the actual load value in percent, you need to remove two 
 consecutive counter values and use the formula: 100*(X1-X0)/(Y1-Y0), where X0 and X1 
-are the counter values, and Y0 and Y1 are the values of the PERF_DATA_BLOCK. PerfTime100nSec 
+are the counter values, and Y0 and Y1 are the values of the `PERF_DATA_BLOCK`. `PerfTime100nSec` 
 field during counter data acquisition time.
 
 After building the DLL, you need to connect it to the project and declare the necessary functions.  
-For example, the library defines the ***GetInstanceInfo*** function to get information about the PERF_INSTANCE_DEFINITION structure:
+For example, the library defines the `GetInstanceInfo` function to get information about the `PERF_INSTANCE_DEFINITION` structure:
 ```cpp
 extern "C" __declspec(dllexport) int GetInstanceInfo(
     PPERF_INSTANCE_DEFINITION p,
